@@ -8,11 +8,11 @@ const {
   routeTransactions,
 } = require("./routers/router");
 
+app.use(logger);
 app.use(express.static("public"));
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(logger);
 
 app
   .route("/")
