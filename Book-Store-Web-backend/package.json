@@ -1,0 +1,19 @@
+{
+  "name": "book-store-web-backend",
+  "version": "1.0.0",
+  "description": "Backend for my book-store",
+  "main": "index.js",
+  "scripts": {
+    "devStart": "nodemon index.js"
+  },
+  "author": "Aditya Sawant",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.3",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
