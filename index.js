@@ -1,23 +1,26 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const port = 3000;
+require("dotenv").config();
+const port = process.env.PORT || 3000;
 const {
   routeItems,
   routeAccounts,
   routeTransactions,
 } = require("./routers/router");
 
-app.use(logger);
+app.use(require("./middleware/logger.middleware"));
+app.use(require("./middleware/errorHandler.middleware"));
 app.use(express.static("public"));
-app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 app.use(express.json());
+app.set("view engine", "ejs");
 
 app
   .route("/")
   .get((req, res) => {
-    res.json({ message: "Wellcome" });
+    res.render("./ejsFiles/deleteme.ejs");
   })
   .post((req, res) => {
     const { description } = req.body;
@@ -33,8 +36,3 @@ app.use("/transactions", routeTransactions);
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-
-function logger(req, res, next) {
-  console.log(req.originalUrl);
-  next();
-}

@@ -1,6 +1,19 @@
 const express = require("express");
 const router = express.Router();
+const path = require("path");
 const db = require("../../database/databasePG");
+require("dotenv").config();
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "../../public/uploads"));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
 
 router
   .route("/")
@@ -23,8 +36,12 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post(async (req, res) => {
+  .post(upload.single("avatar"), async (req, res) => {
+    console.log(req.body);
+    console.log(req.file);
+
     try {
+      // Destructure data from req.body
       const {
         email,
         password,
@@ -38,36 +55,64 @@ router
         postalCode,
         phoneNumber,
         birthdate,
-        profilePicture,
       } = req.body;
 
-      // Insert data into the "account" table
-      const result = await db.query(
-        "INSERT INTO account (email, password, first_name, last_name, age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *",
-        [
-          email,
-          password,
-          firstName,
-          lastName,
-          age,
-          gender,
-          country,
-          city,
-          streetAddress,
-          postalCode,
-          phoneNumber,
-          birthdate,
-          profilePicture,
-        ]
-      );
+      const imageFileAddress =
+        req.file &&
+        req.file.fieldname &&
+        process.env.UPLOAD_PAGE + req.file.filename;
 
-      res.status(201).json({
-        message: "Account created successfully!",
-        result: result.rows[0],
-      });
+      try {
+        const result = await db.query(
+          "INSERT INTO account (email, password, first_name, last_name, age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *",
+          [
+            email,
+            password,
+            firstName,
+            lastName,
+            age,
+            gender,
+            country,
+            city,
+            streetAddress,
+            postalCode,
+            phoneNumber,
+            birthdate,
+            imageFileAddress,
+          ]
+        );
+
+        res.status(201).json({
+          success: true,
+          message: "Account created successfully!",
+          result: result.rows[0],
+        });
+      } catch (error) {
+        console.error("Error:", error);
+
+        // duplicate key violation (code 23505)
+        if (error.code === "23505") {
+          return res.status(208).json({
+            success: false,
+            message: "Account already created successfully!",
+            error: error.message,
+          });
+        }
+
+        res.status(500).json({
+          success: false,
+          error: "Internal Server Error",
+          errorMessage: error.message,
+        });
+      }
     } catch (error) {
       console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+
+      res.status(500).json({
+        success: false,
+        error: "Internal Server Error",
+        errorMessage: error.message,
+      });
     }
   })
   .put(async (req, res) => {
