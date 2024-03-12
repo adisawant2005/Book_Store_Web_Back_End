@@ -19,21 +19,25 @@ router
   .route("/")
   .get(async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password } = req.query;
 
       const result = await db.query(
-        "SELECT * FROM account WHERE email = $1 AND password = $2",
+        "SELECT email, password, first_name, last_name, age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
         [email, password]
       );
-
+      console.log(result.rows[0]);
       if (result.rows.length > 0) {
-        res.status(200).json(result.rows[0]);
+        res.status(200).json({
+          success: true,
+          message: `Received email: ${email}, password: ${password}`,
+          result: result.rows[0],
+        });
       } else {
-        res.status(404).json({ error: "Account not found" });
+        res.status(404).json({ success: false, message: "Account not found" });
       }
     } catch (error) {
       console.error("Error during account retrieval:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ success: false, error: "Internal Server Error" });
     }
   })
   .post(upload.single("avatar"), async (req, res) => {
