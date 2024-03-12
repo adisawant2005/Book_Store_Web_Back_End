@@ -19,21 +19,39 @@ router
   .route("/")
   .get(async (req, res) => {
     try {
-      const { email, password } = req.body;
-
-      const result = await db.query(
-        "SELECT email, password, first_name, last_name, AGE(current_date, birthdate) AS age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
+      const { email, password } = req.query;
+      const checkInputEmail = await db.query(
+        "SELECT email, password FROM account WHERE email = $1",
+        [email]
+      );
+      const checkInputEmailAndPassword = await db.query(
+        "SELECT email, password FROM account WHERE email = $1 AND password = $2",
         [email, password]
       );
-      console.log(result.rows[0]);
-      if (result.rows.length > 0) {
-        res.status(200).json({
-          success: true,
-          message: `Received email: ${email}, password: ${password}`,
-          result: result.rows[0],
+
+      if (checkInputEmail.rows[0] && checkInputEmailAndPassword.rows[0]) {
+        const result = await db.query(
+          "SELECT email, password, first_name, last_name, AGE(current_date, birthdate) AS age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
+          [email, password]
+        );
+        if (result.rows.length > 0) {
+          console.log(result.rows[0]);
+          res.status(200).json({
+            success: true,
+            message: `Received email: ${email}, password: ${password}`,
+            result: result.rows[0],
+          });
+        }
+      } else if (checkInputEmail.rows[0]) {
+        res.status(401).json({
+          success: false,
+          message: "Invalid email or password",
         });
       } else {
-        res.status(404).json({ success: false, message: "Account not found" });
+        res.status(404).json({
+          success: false,
+          message: "Account does not exist",
+        });
       }
     } catch (error) {
       console.error("Error during account retrieval:", error);
