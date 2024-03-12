@@ -19,10 +19,10 @@ router
   .route("/")
   .get(async (req, res) => {
     try {
-      const { email, password } = req.query;
+      const { email, password } = req.body;
 
       const result = await db.query(
-        "SELECT email, password, first_name, last_name, age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
+        "SELECT email, password, first_name, last_name, AGE(current_date, birthdate) AS age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
         [email, password]
       );
       console.log(result.rows[0]);
@@ -37,7 +37,11 @@ router
       }
     } catch (error) {
       console.error("Error during account retrieval:", error);
-      res.status(500).json({ success: false, error: "Internal Server Error" });
+      res.status(500).json({
+        success: false,
+        error: "Internal Server Error",
+        errorMessage: error.message,
+      });
     }
   })
   .post(upload.single("avatar"), async (req, res) => {
@@ -51,7 +55,6 @@ router
         password,
         firstName,
         lastName,
-        age,
         gender,
         country,
         city,
@@ -68,13 +71,12 @@ router
 
       try {
         const result = await db.query(
-          "INSERT INTO account (email, password, first_name, last_name, age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *",
+          "INSERT INTO account (email, password, first_name, last_name, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *, AGE(current_date, birthdate) AS age",
           [
             email,
             password,
             firstName,
             lastName,
-            age,
             gender,
             country,
             city,
@@ -126,7 +128,6 @@ router
         password,
         firstName,
         lastName,
-        age,
         gender,
         country,
         city,
@@ -142,22 +143,20 @@ router
        SET
          first_name = $1,
          last_name = $2,
-         age = $3,
-         gender = $4,
-         country = $5,
-         city = $6,
-         street_address = $7,
-         postal_code = $8,
-         phone_number = $9,
-         birthdate = $10,
-         profile_picture_address = $11
+         gender = $3,
+         country = $4,
+         city = $5,
+         street_address = $6,
+         postal_code = $7,
+         phone_number = $8,
+         birthdate = $9,
+         profile_picture_address = $10
        WHERE
-        email = $12 AND password = $13
-       RETURNING *`,
+        email = $11 AND password = $12
+       RETURNING *, AGE(current_date, birthdate) AS age`,
         [
           firstName,
           lastName,
-          age,
           gender,
           country,
           city,
@@ -171,23 +170,20 @@ router
         ]
       );
 
-      const updated = await db.query(
-        "SELECT * FROM account WHERE email = $1 AND password = $2",
-        [email, password]
-      );
-
-      if (updated.rows.length > 0) {
+      if (result.rows.length > 0) {
         res.status(200).json({
           message: "Account updated successfully!",
-          dataUpdated: updated.rows[0],
+          dataUpdated: result.rows[0],
         });
       } else {
-        res.status(404).json({ error: "Account not found" });
+        res.status(404).json({ message: "Account not found" });
       }
     } catch (error) {
       console.error("Error:", error);
 
-      res.status(500).json({ error: "Internal Server Error" });
+      res
+        .status(500)
+        .json({ error: "Internal Server Error", errorMessage: error.message });
     }
   })
   .delete(async (req, res) => {
