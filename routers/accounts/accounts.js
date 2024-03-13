@@ -31,7 +31,7 @@ router
 
       if (checkInputEmail.rows[0] && checkInputEmailAndPassword.rows[0]) {
         const result = await db.query(
-          "SELECT email, password, first_name, last_name, AGE(current_date, birthdate) AS age, gender, country, city, street_address, postal_code, phone_number, birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
+          "SELECT email, password, first_name, last_name, AGE(current_date, birthdate) AS age, gender, country, city, street_address, postal_code, phone_number, TO_CHAR(birthdate, 'DD-MM-YYYY') AS birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
           [email, password]
         );
         if (result.rows.length > 0) {
@@ -71,14 +71,14 @@ router
       const {
         email,
         password,
-        firstName,
-        lastName,
+        first_name,
+        last_name,
         gender,
         country,
         city,
-        streetAddress,
-        postalCode,
-        phoneNumber,
+        street_address,
+        postal_code,
+        phone_number,
         birthdate,
       } = req.body;
 
@@ -93,14 +93,14 @@ router
           [
             email,
             password,
-            firstName,
-            lastName,
+            first_name,
+            last_name,
             gender,
             country,
             city,
-            streetAddress,
-            postalCode,
-            phoneNumber,
+            street_address,
+            postal_code,
+            phone_number,
             birthdate,
             imageFileAddress,
           ]
@@ -139,62 +139,129 @@ router
       });
     }
   })
-  .put(async (req, res) => {
+  .put(upload.single("avatar"), async (req, res) => {
     try {
       const {
         email,
         password,
-        firstName,
-        lastName,
+        first_name,
+        last_name,
         gender,
         country,
         city,
-        streetAddress,
-        postalCode,
-        phoneNumber,
+        street_address,
+        postal_code,
+        phone_number,
         birthdate,
-        profilePicture,
       } = req.body;
 
-      const result = await db.query(
-        `UPDATE account
-       SET
-         first_name = $1,
-         last_name = $2,
-         gender = $3,
-         country = $4,
-         city = $5,
-         street_address = $6,
-         postal_code = $7,
-         phone_number = $8,
-         birthdate = $9,
-         profile_picture_address = $10
+      const imageFileAddress =
+        req.file &&
+        req.file.fieldname &&
+        process.env.UPLOAD_PAGE + req.file.filename;
+
+      console.log(imageFileAddress);
+
+      if (req.file && req.file.fieldname) {
+        console.log(imageFileAddress);
+        const result = await db.query(
+          `UPDATE account
+          SET
+          first_name = $1,
+          last_name = $2,
+          gender = $3,
+          country = $4,
+          city = $5,
+          street_address = $6,
+          postal_code = $7,
+          phone_number = $8,
+          birthdate = $9,
+          profile_picture_address = $10
        WHERE
         email = $11 AND password = $12
-       RETURNING *, AGE(current_date, birthdate) AS age`,
-        [
-          firstName,
-          lastName,
-          gender,
-          country,
-          city,
-          streetAddress,
-          postalCode,
-          phoneNumber,
-          birthdate,
-          profilePicture,
-          email,
-          password,
-        ]
-      );
-
-      if (result.rows.length > 0) {
-        res.status(200).json({
-          message: "Account updated successfully!",
-          dataUpdated: result.rows[0],
-        });
+        RETURNING *, AGE(current_date, birthdate) AS age`,
+          [
+            first_name,
+            last_name,
+            gender,
+            country,
+            city,
+            street_address,
+            postal_code,
+            phone_number,
+            birthdate,
+            imageFileAddress,
+            email,
+            password,
+          ]
+        );
+        if (result.rows.length > 0) {
+          const data = await db.query(
+            "SELECT email, password, first_name, last_name, AGE(current_date, birthdate) AS age, gender, country, city, street_address, postal_code, phone_number, TO_CHAR(birthdate, 'DD-MM-YYYY') AS birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
+            [email, password]
+          );
+          res.status(200).json({
+            success: true,
+            message: "Account updated successfully!",
+            result: data.rows[0],
+          });
+          console.log(data.rows[0]);
+        } else {
+          res
+            .status(404)
+            .json({ success: false, message: "Account not found" });
+          console.log(result.rows[0]);
+          console.log("status 404");
+        }
       } else {
-        res.status(404).json({ message: "Account not found" });
+        console.log("no profile");
+        const result = await db.query(
+          `UPDATE account
+          SET
+          first_name = $1,
+          last_name = $2,
+          gender = $3,
+          country = $4,
+          city = $5,
+          street_address = $6,
+          postal_code = $7,
+          phone_number = $8,
+          birthdate = $9
+       WHERE
+        email = $10 AND password = $11
+        RETURNING *, AGE(current_date, birthdate) AS age`,
+          [
+            first_name,
+            last_name,
+            gender,
+            country,
+            city,
+            street_address,
+            postal_code,
+            phone_number,
+            birthdate,
+            email,
+            password,
+          ]
+        );
+        if (result.rows.length > 0) {
+          const data = await db.query(
+            "SELECT email, password, first_name, last_name, AGE(current_date, birthdate) AS age, gender, country, city, street_address, postal_code, phone_number, TO_CHAR(birthdate, 'DD-MM-YYYY') AS birthdate, profile_picture_address FROM account WHERE email = $1 AND password = $2",
+            [email, password]
+          );
+          res.status(200).json({
+            success: true,
+            message: "Account updated successfully!",
+            result: data.rows[0],
+          });
+          console.log(data.rows[0]);
+        } else {
+          res
+            .status(404)
+            .json({ success: false, message: "Account not found" });
+          console.log(result.rows[0]);
+          console.log("status 404");
+        }
       }
     } catch (error) {
       console.error("Error:", error);
