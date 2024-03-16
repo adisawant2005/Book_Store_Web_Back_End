@@ -4,8 +4,10 @@ const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 3000;
 const {
-  routeItems,
   routeAccounts,
+  routeItems,
+  routeCart,
+  routeOrder,
   routeTransactions,
 } = require("./routers/router");
 
@@ -29,8 +31,10 @@ app
   .put((req, res) => {})
   .delete((req, res) => {});
 
-app.use("/items", routeItems);
 app.use("/accounts", routeAccounts);
+app.use("/items", routeItems);
+app.use("/cart", routeCart);
+app.use("/order", routeOrder);
 app.use("/transactions", routeTransactions);
 
 app.listen(port, () => {

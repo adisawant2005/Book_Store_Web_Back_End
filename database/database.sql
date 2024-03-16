@@ -6,9 +6,25 @@ create table items (
 	item_category VARCHAR(20) NOT NULL,
 	item_rating INT,
 	item_reviews INT,
-	item_image_url VARCHAR(1000)
+	item_image_url VARCHAR(1000),
+	item_seller_id UUID NOT NULL REFERENCES account(user_id),
+	item_quantity INT NOT NULL DEFAULT 0
 );
-insert into items (item_name, item_description, item_price, item_category, item_rating, item_reviews, item_image_url) values ('Blala', 'lorem ipsum heee.', 38068, 'Horror', 4, 860, 'http://localhost:3000/items-images/1.jpg');
+insert into items (item_name, item_description, item_price, item_category, item_rating, item_reviews, item_image_url, item_seller_id) values ('Book_Name', 'Lorem ipsum coding', 800, 'Horror', 4, 860, 'http://localhost:3000/Items-images/atlas.jpg', '618b5735-9b1b-4b0c-bc6b-0f4d7b00434f');
+insert into items (item_name, item_description, item_price, item_category, item_rating, item_reviews, item_image_url, item_seller_id) values ('Book_Name', 'Twinkle, twinkle, little star,
+How I wonder what you are!
+Up above the world so high,
+Like a diamond in the sky.
+
+When the blazing sun is gone,
+When he nothing shines upon,
+Then you show your little light,
+Twinkle, twinkle, all the night.', 800, 'Horror', 4, 860, 'http://localhost:3000/Items-images/atlas.jpg', '618b5735-9b1b-4b0c-bc6b-0f4d7b00434f');
+
+
+
+
+
 
 create table account (
 	user_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

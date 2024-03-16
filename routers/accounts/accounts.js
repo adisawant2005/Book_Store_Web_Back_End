@@ -297,15 +297,13 @@ module.exports = router;
 // {
 //   "email": "adisawant@gmail.com",
 //   "password": "12345678",
-//   "firstName": "Aditya",
-//   "lastName": "Sawant",
-//   "age": 19,
+//   "first_name": "Aditya",
+//   "last_name": "Sawant",
 //   "gender": "male",
 //   "country": "India",
 //   "city": "Pune",
-//   "streetAddress": "Sant Nagar, Lohegaon, Pune, 411047",
-//   "postalCode": "411047",
-//   "phoneNumber": "9623822469",
-//   "birthdate": "14/02/2005",
-//   "profilePicture": "/images/blueBird.jsg"
+//   "street_address": "Sant Nagar, Lohegaon, Pune, 411047",
+//   "postal_code": "411047",
+//   "phone_number": "9623822469",
+//   "birthdate": "14/02/2005"
 // }
