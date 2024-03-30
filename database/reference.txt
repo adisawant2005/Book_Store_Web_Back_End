@@ -1,0 +1,96 @@
+book_store=# select * from account;
+book_store=# \x
+Expanded display is on.
+book_store=# select * from account;
+book_store=# -[ RECORD 1 ]-----------+-----------------------------------------------------------------------
+-----
+user_id                 | 618b5735-9b1b-4b0c-bc6b-0f4d7b00434f
+email                   | lfydo0@sitemeter.com
+password                | 12345678
+first_name              | Lovell
+last_name               | Fydo
+gender                  | Male
+country                 | Japan
+city                    | Hirado
+street_address          | 13782 Roxbury Trail
+postal_code             | 276-0017
+phone_number            | 726-844-7617
+birthdate               | 1908-10-22
+registration_date       | 2013-02-11
+profile_picture_address | http://localhost:3000
+book_store-# select * from items;
+ERROR:  syntax error at or near "-"
+LINE 1: -[ RECORD 1 ]-----------+-----------------------------------...
+        ^
+book_store=# select * from items;
+book_store=# -[ RECORD 1 ]----+----------------------------------------------------------
+item_id          | b0604752-273e-4bf3-80fb-e923d836c17b
+item_name        | Stories Behind The Images
+item_description | lorem ipsum in action.
+item_price       | 700
+item_category    | Climbing
+item_rating      | 3
+item_reviews     | 1350
+item_image_url   | http://localhost:3000/Items-images/StoriesBTI_3DCover.jpg
+item_seller_id   | 618b5735-9b1b-4b0c-bc6b-0f4d7b00434f
+item_quantity    | 5;
+ERROR:  syntax error at or near "-"
+LINE 1: -[ RECORD 1 ]----+------------------------------------------...
+        ^
+book_store=# select * from cart;
+-[ RECORD 1 ]-------------------------------------
+product_id  | 7eec2196-f55c-4841-bf78-15e09aa9bb27
+customer_id | 618b5735-9b1b-4b0c-bc6b-0f4d7b00434f
+quantity    | 3
+-[ RECORD 2 ]-------------------------------------
+product_id  | 4caf4a19-8be2-44bf-911a-6ca5416c5b27
+customer_id | dca7315e-c0a7-40c3-82d2-d49808c811f6
+quantity    | 1
+-[ RECORD 3 ]-------------------------------------
+product_id  | 2eeb83ef-967a-453d-8261-1e43fe42e86d
+customer_id | dca7315e-c0a7-40c3-82d2-d49808c811f6
+quantity    | 1
+
+book_store=# select * from transactions;
+-[ RECORD 1 ]----+-------------------------------------
+transaction_id   | f9f6c96c-0718-4d16-b2bb-583b6bb8f4a0
+transaction_date | 2022-05-21
+customer_id      | 618b5735-9b1b-4b0c-bc6b-0f4d7b00434f
+product_id       | 7eec2196-f55c-4841-bf78-15e09aa9bb27
+total_price      | 9121794
+payment_method   | card
+payment_status   | refunded
+city             | Galatás
+state            | Albela
+country          | Greece
+shipping_cost    | 9808
+tax_rate         | 16
+tax_amount       | 76463
+card_number      | 1111 1111 1111 1111
+card_cvv         | 123
+card_expiry_date | 2024-04-26
+upi_id           | hello@upi
+
+book_store=# select * from orders;
+-[ RECORD 1 ]-----------+---------------------------------------------
+order_id                | 457fcebc-138a-49ec-b155-705537700461
+customer_id             | 618b5735-9b1b-4b0c-bc6b-0f4d7b00434f
+product_id              | 7eec2196-f55c-4841-bf78-15e09aa9bb27
+order_date              | 2021-02-12
+transaction_id          | f9f6c96c-0718-4d16-b2bb-583b6bb8f4a0
+quantity                | 4
+unit_price              | 50
+shipping_address        | 492 Meadow Vale Place
+shipping_city           | Gocoton
+shipping_state          | 
+shipping_zip_code       | 6337
+shipping_country        | Philippines
+shipping_method         | Express
+order_status            | Shipped
+estimated_delivery_date | 2021-04-05
+actual_delivery_date    | 2021-04-06
+product_image_address   | http://localhost:5173/StoriesBTI_3DCover.jpg
+product_name            | lorem
+product_description     | lorem ipsum boom
+
+book_store=# ^C

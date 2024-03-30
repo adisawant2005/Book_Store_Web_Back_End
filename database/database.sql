@@ -35,7 +35,6 @@ create table account (
 	password VARCHAR(50) NOT NULL,
 	first_name VARCHAR(50) NOT NULL,
 	last_name VARCHAR(50) NOT NULL,
-	age INT NOT NULL,
 	gender VARCHAR(50) NOT NULL,
 	country VARCHAR(50) NOT NULL,
 	city VARCHAR(50) NOT NULL,
@@ -46,8 +45,8 @@ create table account (
 	registration_date DATE DEFAULT CURRENT_DATE,
 	profile_picture_address VARCHAR(1000)
 );
-insert into account ( email, password, first_name, last_name, age, gender, country, city, street_address, postal_code, phone_number, birthdate, registration_date, profile_picture_address)
-values ('lfydo0@sitemeter.com', '12345678', 'Lovell', 'Fydo', 30, 'Male', 'Japan', 'Hirado', '13782 Roxbury Trail', '276-0017', '726-844-7617', '1908-10-22', '2013-02-11', 'http://localhost:3000');
+insert into account ( email, password, first_name, last_name, gender, country, city, street_address, postal_code, phone_number, birthdate, registration_date, profile_picture_address)
+values ('lfydo0@sitemeter.com', '12345678', 'Lovell', 'Fydo', 'Male', 'Japan', 'Hirado', '13782 Roxbury Trail', '276-0017', '726-844-7617', '1908-10-22', '2013-02-11', 'http://localhost:3000');
 
 create table transactions (
 transaction_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -62,11 +61,15 @@ state VARCHAR(50) NOT NULL,
 country VARCHAR(50) NOT NULL,
 shipping_cost INT NOT NULL,
 tax_rate INT NOT NULL,
-tax_amount INT NOT NULL
+tax_amount INT NOT NULL,
+card_number VARCHAR(25),
+card_cvv VARCHAR(4),
+card_expiry_date DATE,
+upi_id VARCHAR(50),
 );
 
-insert into transactions (transaction_date, customer_id, product_id, total_price, payment_method, payment_status, city, state, country, shipping_cost, tax_rate, tax_amount)
-values ('2022/05/21', '618b5735-9b1b-4b0c-bc6b-0f4d7b00434f', '7eec2196-f55c-4841-bf78-15e09aa9bb27', 9121794, 'debit card', 'refunded', 'Galatás', 'Albela', 'Greece', 9808, 16, 76463);
+insert into transactions (transaction_date, customer_id, product_id, total_price, payment_method, payment_status, city, state, country, shipping_cost, tax_rate, tax_amount, card_expiry_date)
+values ('2022/05/21', '618b5735-9b1b-4b0c-bc6b-0f4d7b00434f', '7eec2196-f55c-4841-bf78-15e09aa9bb27', 9121794, 'debit card', 'refunded', 'Galatás', 'Albela', 'Greece', 9808, 16, 76463, "1111-11-11");
 
 create table orders (
 order_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -76,7 +79,6 @@ order_date DATE,
 transaction_id UUID REFERENCES transactions(transaction_id),
 quantity INT,
 unit_price INT,
-total_price INT,
 shipping_address VARCHAR(50),
 shipping_city VARCHAR(50),
 shipping_state VARCHAR(50),
@@ -86,14 +88,14 @@ shipping_method VARCHAR(8),
 order_status VARCHAR(10),
 estimated_delivery_date DATE,
 actual_delivery_date DATE,
-customer_feedback TEXT,
-customer_rating INT,
-customer_comments TEXT
+product_image_address  VARCHAR(1000) NOT NULL,
+product_name  VARCHAR(50),
+product_description  VARCHAR(500),
 );
 
 insert into orders (customer_id, product_id, order_date, transaction_id, quantity, unit_price,
-total_price, shipping_address, shipping_city, shipping_state, shipping_zip_code, shipping_country, shipping_method, order_status, estimated_delivery_date, actual_delivery_date, customer_feedback, customer_rating, customer_comments)
-values ('618b5735-9b1b-4b0c-bc6b-0f4d7b00434f', '7eec2196-f55c-4841-bf78-15e09aa9bb27', '2021/02/12','f9f6c96c-0718-4d16-b2bb-583b6bb8f4a0',4, 50, 200, '492 Meadow Vale Place', 'Gocoton', null, '6337', 'Philippines', 'Express', 'Shipped', '2021/04/05', '2021/04/06', 'Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', 4, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.');
+ shipping_address, shipping_city, shipping_state, shipping_zip_code, shipping_country, shipping_method, order_status, estimated_delivery_date, actual_delivery_date, product_image_address, product_name, product_description)
+values ('618b5735-9b1b-4b0c-bc6b-0f4d7b00434f', '7eec2196-f55c-4841-bf78-15e09aa9bb27', '2021/02/12','f9f6c96c-0718-4d16-b2bb-583b6bb8f4a0',4, 50, '492 Meadow Vale Place', 'Gocoton', null, '6337', 'Philippines', 'Express', 'Shipped', '2021/04/05', '2021/04/06', 'http://localhost:3000/Items-images/atlas.jpg', 'lorem', 'lorem ipsum boooooooooooooom');
 
 create table cart (
 product_id UUID REFERENCES items(item_id),
