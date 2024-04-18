@@ -4,6 +4,7 @@ const db = require("../../database/databasePG");
 const path = require("path");
 require("dotenv").config();
 const multer = require("multer");
+const { error } = require("console");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, "../../public/Items-images"));
@@ -140,6 +141,37 @@ router
       res.status(500).json({ error: error.message });
     }
   });
+
+router
+  .route("/search-items")
+  .get(async (req, res) => {
+    const { search_text } = req.query;
+
+    try {
+      const result = await db.query("SELECT * FROM items");
+      const items = result.rows;
+      if (search_text === "") {
+        res.json({ search_text: search_text, items: items });
+      } else if (search_text !== "") {
+        const textLength = search_text.length;
+        const foundItems = items.filter((item) =>
+          search_text
+            .toLowerCase()
+            .includes(item.item_name.slice(0, textLength).toLowerCase())
+        );
+
+        res.json({ search_text: search_text, items: foundItems });
+      } else {
+        res.json({ error: "search_items is not defined" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  })
+  .post(async (req, res) => {})
+  .put(async (req, res) => {})
+  .delete(async (req, res) => {});
+
 module.exports = router;
 
 // Dummy data:-
