@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require("../../database/databasePG");
 const path = require("path");
 require("dotenv").config();
+const accountAuthentication = require("../../middleware/accountAuthentication");
 const multer = require("multer");
 const { error } = require("console");
 const storage = multer.diskStorage({
@@ -43,102 +44,177 @@ router
       res.status(500).json({ error: error.message });
     }
   })
-  .post(async (req, res) => {
-    const {
-      item_name,
-      item_description,
-      item_price,
-      item_category,
-      item_rating,
-      item_reviews,
-      item_image_url,
-      item_seller_id,
-      item_quantity,
-    } = req.body;
+  .post(
+    accountAuthentication,
+    upload.single("item_image"),
+    async (req, res) => {
+      const {
+        user_email,
+        user_password,
+        item_name,
+        item_description,
+        item_price,
+        item_category,
+        item_quantity,
+      } = req.body;
 
-    try {
-      const result = await db.query(
-        " INSERT INTO items (item_name, item_description, item_price, item_category, item_rating, item_reviews, item_image_url, item_seller_id, item_quantity) VALUES ( $1, $2, $3, $4, $5, $6, $7,$8, $9 ) RETURNING *;",
-        [
-          item_name,
-          item_description,
-          item_price,
-          item_category,
-          item_rating,
-          item_reviews,
-          item_image_url,
-          item_seller_id,
-          item_quantity,
-        ]
-      );
+      const itemImageAddress =
+        req.file &&
+        req.file.fieldname &&
+        process.env.ITEM_UPLOAD_PAGE + req.file.filename;
 
-      res.json(result.rows);
-    } catch (error) {
-      res.json({ message: "item post", error: error.message });
+      // Default data:-
+      const item_rating = 3;
+      const item_reviews = 50;
+
+      try {
+        if (user_email) {
+          const user = await db.query(
+            "SELECT user_id FROM account WHERE email = $1 AND password = $2",
+            [user_email, user_password]
+          );
+
+          const item_seller_id = user.rows[0] && user.rows[0].user_id;
+
+          if (item_seller_id) {
+            const result = await db.query(
+              " INSERT INTO items (item_name, item_description, item_price, item_category, item_rating, item_reviews, item_image_url, item_seller_id, item_quantity) VALUES ( $1, $2, $3, $4, $5, $6, $7,$8, $9 ) RETURNING *;",
+              [
+                item_name,
+                item_description,
+                item_price,
+                item_category,
+                item_rating,
+                item_reviews,
+                itemImageAddress,
+                item_seller_id,
+                item_quantity,
+              ]
+            );
+
+            res.json(result.rows[0]);
+          } else {
+            res.status(404).json({ error: "User not found" });
+          }
+        } else {
+          res.json({ success: false, message: "Please provide the email" });
+        }
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     }
-  })
-  .put(async (req, res) => {
+  )
+  .put(accountAuthentication, upload.single("item_image"), async (req, res) => {
     const {
+      user_email,
+      user_password,
       item_id,
       item_name,
       item_description,
       item_price,
       item_category,
-      item_rating,
-      item_reviews,
-      item_image_url,
-      item_seller_id,
       item_quantity,
     } = req.body;
-    try {
-      const result = await db.query(
-        "UPDATE items SET item_name = $1, item_description = $2, item_price = $3, item_category = $4, item_rating = $5, item_reviews = $6, item_image_url = $7, item_seller_id = $8, item_quantity = $9 WHERE item_id = $10 RETURNING *;",
-        [
-          item_name,
-          item_description,
-          item_price,
-          item_category,
-          item_rating,
-          item_reviews,
-          item_image_url,
-          item_seller_id,
-          item_quantity,
-          item_id,
-        ]
-      );
 
-      console.log(result.rows[0]);
-      res.json({
-        success: true,
-        message: "item updated",
-        data: result.rows,
-      });
+    const itemImageAddress =
+      req.file &&
+      req.file.fieldname &&
+      process.env.ITEM_UPLOAD_PAGE + req.file.filename;
+
+    // Default data:-
+    const item_rating = 3;
+    const item_reviews = 50;
+
+    try {
+      if (user_email) {
+        const user = await db.query(
+          "SELECT user_id FROM account WHERE email = $1 AND password = $2",
+          [user_email, user_password]
+        );
+
+        const item_seller_id = user.rows[0] && user.rows[0].user_id;
+
+        if (item_seller_id) {
+          const result = await db.query(
+            "UPDATE items SET item_name = $1, item_description = $2, item_price = $3, item_category = $4, item_rating = $5, item_reviews = $6, item_image_url =  CASE WHEN $7 THEN $8 ELSE item_image_url END, item_seller_id = $9, item_quantity = $10 WHERE item_id = $11 RETURNING *;",
+            [
+              item_name,
+              item_description,
+              item_price,
+              item_category,
+              item_rating,
+              item_reviews,
+              itemImageAddress ? true : false,
+              itemImageAddress,
+              item_seller_id,
+              item_quantity,
+              item_id,
+            ]
+          );
+
+          if (result.rows[0]) {
+            res.json({
+              success: true,
+              message: "item updated",
+              data: result.rows,
+            });
+          } else {
+            res.json({
+              success: false,
+              message: "item not found",
+              data: result.rows,
+            });
+          }
+        } else {
+          res.status(404).json({ error: "User not found" });
+        }
+      } else {
+        res.json({ success: false, message: "Please provide the email" });
+      }
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   })
   .delete(async (req, res) => {
-    const { item_id } = req.body;
+    const { item_id, user_email, user_password } = req.body;
+    console.log({ item_id, user_email, user_password });
     try {
-      const result = await db.query(
-        "DELETE FROM items WHERE item_id = $1 RETURNING *;",
-        [item_id]
-      );
-      if (result.rows.length !== 0) {
-        res.json({
-          success: true,
-          message: "item deleted",
-          data: result.rows,
-        });
+      if (user_email) {
+        const user = await db.query(
+          "SELECT user_id FROM account WHERE email = $1 AND password = $2",
+          [user_email, user_password]
+        );
+
+        const item_seller_id = user.rows[0] && user.rows[0].user_id;
+
+        if (item_seller_id) {
+          const result = await db.query(
+            "DELETE FROM items WHERE item_id = $1 RETURNING *;",
+            [item_id]
+          );
+
+          if (result.rows.length !== 0) {
+            res.json({
+              success: true,
+              message: "item deleted",
+              data: result.rows,
+            });
+          } else {
+            res.json({
+              success: false,
+              message: "item not found",
+              data: result.rows,
+            });
+          }
+        } else {
+          res.status(404).json({ success: false, message: "User not found" });
+        }
       } else {
-        res.json({
-          success: false,
-          message: "item not found",
-          data: result.rows,
-        });
+        res.json({ success: false, message: "Please provide the email" });
       }
     } catch (error) {
       res.status(500).json({ error: error.message });
+      console.log({ error: error.message });
     }
   });
 

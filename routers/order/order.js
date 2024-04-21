@@ -137,15 +137,15 @@ router
           current_date_string,
           customer_id,
           product_id,
-          final_price,
+          (final_price * 100) / 1,
           payment_method,
           payment_status,
           shipping_city,
           shipping_state,
           shipping_country,
-          shipping_cost,
+          (shipping_cost * 100) / 1,
           tax_rate,
-          tax_amount,
+          (tax_amount * 100) / 1,
           payment_method === "card" ? card_number : "",
           payment_method === "card" ? card_cvv : "",
           payment_method === "card" ? card_expiry_date : "1111-11-11",
@@ -164,7 +164,7 @@ router
           current_date_string,
           transaction.rows[0].transaction_id,
           quantity,
-          unit_price,
+          (unit_price * 100) / 1,
           shipping_address,
           shipping_city,
           shipping_state,
@@ -183,8 +183,8 @@ router
       // );
 
       res.status(201).json({
-        transaction: transaction.rows,
-        orderedItem: orderedItem.rows,
+        transaction: transaction.rows[0],
+        orderedItem: orderedItem.rows[0],
         // updateItem: updateItem.rows,
       });
     } catch (error) {

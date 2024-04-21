@@ -85,7 +85,7 @@ router
       const imageFileAddress =
         req.file &&
         req.file.fieldname &&
-        process.env.UPLOAD_PAGE + req.file.filename;
+        process.env.AVATAR_UPLOAD_PAGE + req.file.filename;
 
       try {
         const result = await db.query(
@@ -158,7 +158,7 @@ router
       const imageFileAddress =
         req.file &&
         req.file.fieldname &&
-        process.env.UPLOAD_PAGE + req.file.filename;
+        process.env.AVATAR_UPLOAD_PAGE + req.file.filename;
 
       console.log(imageFileAddress);
 

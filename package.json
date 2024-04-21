@@ -4,7 +4,7 @@
   "description": "Backend for my book-store",
   "main": "index.js",
   "scripts": {
-    "devStart": "nodemon index.js"
+    "backend": "nodemon index.js"
   },
   "author": "Aditya Sawant",
   "license": "ISC",
