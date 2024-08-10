@@ -1,4 +1,4 @@
--- Active: 1713461865995@@localhost@5432@book_store@public
+-- Active: 1721880385002@postgres:pgsql@localhost:5432/Book_Store
 create table items (
 	item_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	item_name VARCHAR(50) NOT NULL,
