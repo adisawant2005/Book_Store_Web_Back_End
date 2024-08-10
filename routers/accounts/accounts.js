@@ -4,9 +4,10 @@ const path = require("path");
 const db = require("../../database/databasePG");
 require("dotenv").config();
 const multer = require("multer");
+const { read } = require("fs");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../../public/uploads"));
+    cb(null, path.join(__dirname, "../../public/uploads/avatar"));
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -63,9 +64,7 @@ router
     }
   })
   .post(upload.single("avatar"), async (req, res) => {
-    console.log(req.body);
-    console.log(req.file);
-
+    // console.log({ bodyData: req.body, fileData: req.file });
     try {
       // Destructure data from req.body
       const {
@@ -85,7 +84,7 @@ router
       const imageFileAddress =
         req.file &&
         req.file.fieldname &&
-        process.env.AVATAR_UPLOAD_PAGE + req.file.filename;
+        process.env.UPLOAD_PAGE + process.env.AVATAR_PAGE + req.file.filename;
 
       try {
         const result = await db.query(
@@ -140,6 +139,7 @@ router
     }
   })
   .put(upload.single("avatar"), async (req, res) => {
+    // console.log({ body: req.body, file: req.file });
     try {
       const {
         email,
@@ -158,9 +158,7 @@ router
       const imageFileAddress =
         req.file &&
         req.file.fieldname &&
-        process.env.AVATAR_UPLOAD_PAGE + req.file.filename;
-
-      console.log(imageFileAddress);
+        process.env.UPLOAD_PAGE + process.env.AVATAR_PAGE + req.file.filename;
 
       if (req.file && req.file.fieldname) {
         console.log(imageFileAddress);

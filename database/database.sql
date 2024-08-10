@@ -1,4 +1,4 @@
--- Active: 1721880385002@postgres:pgsql@localhost:5432/Book_Store
+-- Active: 1721880385002@postgres:pgsql@localhost:5432/book_store
 create table items (
 	item_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	item_name VARCHAR(50) NOT NULL,
@@ -61,7 +61,7 @@ create table transactions (
 transaction_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 transaction_date DATE NOT NULL,
 customer_id UUID NOT NULL REFERENCES account(user_id),
-product_id UUID NOT NULL REFERENCES items(item_id),
+product_id UUID NOT NULL,
 total_price INT NOT NULL,
 payment_method VARCHAR(50) NOT NULL,
 payment_status VARCHAR(8) NOT NULL,

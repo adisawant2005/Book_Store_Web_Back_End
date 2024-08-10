@@ -8,7 +8,7 @@ const multer = require("multer");
 const { error } = require("console");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../../public/Items-images"));
+    cb(null, path.join(__dirname, "../../public/uploads/items-images"));
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -32,12 +32,14 @@ router
             "SELECT * FROM items WHERE item_seller_id = $1",
             [user.rows[0].user_id]
           );
-          res.json(user_items.rows);
+          console.log({ userLogged: true, body: user_items.rows });
+          res.status(200).json(user_items.rows);
         } else {
           res.status(404).json({ error: "User not found" });
         }
       } else {
         const result = await db.query("SELECT * FROM items");
+        console.log({ userLogged: false, body: result.rows });
         res.json(result.rows);
       }
     } catch (error) {
@@ -61,7 +63,7 @@ router
       const itemImageAddress =
         req.file &&
         req.file.fieldname &&
-        process.env.ITEM_UPLOAD_PAGE + req.file.filename;
+        process.env.UPLOAD_PAGE + process.env.ITEMS_PAGE + req.file.filename;
 
       // Default data:-
       const item_rating = 3;
@@ -119,7 +121,7 @@ router
     const itemImageAddress =
       req.file &&
       req.file.fieldname &&
-      process.env.ITEM_UPLOAD_PAGE + req.file.filename;
+      process.env.UPLOAD_PAGE + process.env.ITEMS_PAGE + req.file.filename;
 
     // Default data:-
     const item_rating = 3;
