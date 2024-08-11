@@ -108,35 +108,49 @@ router
   .put(async (req, res) => {})
   .delete(async (req, res) => {
     try {
-      const { customer_email, product_id } = req.body;
+      const { customer_email, product_id, delete_all = false } = req.body;
       console.log({ customer_email: customer_email, product_id: product_id });
+      console.log(req.body);
       const account_query = await db.query(
         "SELECT user_id FROM account WHERE email = $1",
         [customer_email]
       );
       console.log(account_query.rows);
       const user_id = account_query.rows[0].user_id;
-      const deletedItem = await db.query(
-        "DELETE FROM cart WHERE product_id = $1 AND customer_id = $2 RETURNING *",
-        [product_id, user_id]
-      );
-      if (deletedItem.rows[0]) {
+      if (delete_all) {
+        const deletedItem = await db.query(
+          "DELETE FROM cart WHERE customer_id = $1",
+          [user_id]
+        );
         const result = {
           customer_email: customer_email,
-          product_id: deletedItem.rows[0].product_id,
-          deleted: true,
+          deleted_all: true,
         };
         console.log(result);
         res.json(result);
       } else {
-        const result = {
-          message: "item is not there",
-          customer_email: customer_email,
-          product_id: product_id,
-          deleted: false,
-        };
-        console.log(result);
-        res.json(result);
+        const deletedItem = await db.query(
+          "DELETE FROM cart WHERE product_id = $1 AND customer_id = $2 RETURNING *",
+          [product_id, user_id]
+        );
+        if (deletedItem.rows[0]) {
+          const result = {
+            customer_email: customer_email,
+            product_id: deletedItem.rows[0].product_id,
+            deleted: true,
+          };
+          console.log(result);
+          res.json(result);
+        } else {
+          const result = {
+            message: "item is not there",
+            customer_email: customer_email,
+            product_id: product_id,
+            deleted: false,
+          };
+          console.log(result);
+          res.json(result);
+        }
       }
     } catch (error) {
       res.status(500).json({ error: error.message });
